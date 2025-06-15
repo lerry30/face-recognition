@@ -1,0 +1,7 @@
+/__pycache__
+/registered_faces
+
+face_database.pkl
+face_recognition.db
+face_recognition.log
+
