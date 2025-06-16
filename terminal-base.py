@@ -1,11 +1,11 @@
-from face_recog import FaceRecognitionSystem
-from face_regis import capture_and_register_face
-from available_cam import list_available_cameras
+from recog.face_recog import FaceRecognitionSystem
+from recog.face_regis import capture_and_register_face
+from recog.available_cam import list_available_cameras
 
 def registration_menu():
     """Interactive menu for face registration"""
     face_system = FaceRecognitionSystem(
-        tolerance=0.42,
+        tolerance=0.43,
         model='hog',
         enable_logging=True
     )
