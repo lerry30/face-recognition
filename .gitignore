@@ -1,8 +1,8 @@
-/__pycache__
-/recog/__pycache__
-/registered_faces
+*/__pycache__/
+*/recog/__pycache__/
+*/registered_faces/
 
-face_database.pkl
-face_recognition.db
-face_recognition.log
+*/face_database.pkl
+*/face_recognition.db
+*/face_recognition.log
 

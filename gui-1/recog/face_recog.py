@@ -12,6 +12,21 @@ import sqlite3
 import logging
 from collections import defaultdict
 
+"""
+    Methods:
+        setup_logging 
+        setup_database
+        add_known_face(self, image_path, name, metadata=None)
+        save_face_database(self, filename='face_database.pkl')
+        load_face_database(self, filename='face_database.pkl')
+        process_frame(self, frame, camera_id="default")
+        log_recognition(self, result) --- insert to database
+        send_to_server(self, result)
+        _post_to_server(self, data)
+        run_camera_recognition(self, camera_index=0, display=True)
+        get_recognition_stats(self, days=7)
+"""
+
 class FaceRecognitionSystem:
     def __init__(self, 
                  tolerance=0.4, 
@@ -79,13 +94,14 @@ class FaceRecognitionSystem:
             )
         ''')
         self.conn.commit()
-    
+   
+    # validate face details for face registration
     def add_known_face(self, image_path, name, metadata=None):
         """
         Add a known face to the recognition database
         
         Args:
-            image_path: Path to the image file
+            image_path: Path to the image file. This is a temporary file. If the face info is valid then this function will return true to proceed for actual saving of the file.
             name: Name of the person
             metadata: Additional metadata (dict)
         """

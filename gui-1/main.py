@@ -9,6 +9,33 @@ import os
 
 from recog.face_recog import FaceRecognitionSystem
 
+"""
+    Methods:
+        setup_window
+        init_face_system
+        create_widgets
+        create_control_panel(self, parent)
+        create_video_display(self, parent)
+        create_status_panel(self, parent)
+        create_side_panel
+        on_tolerance_change(self, value)
+        toggle_appearance_mode
+        start_camera
+        stop_camera
+        update_video
+        process_frame_with_recognition(self, frame)
+        prepare_frame_for_display(self, frame)
+        update_status(self, recognition_results)
+        register_face_from_camera
+        register_face_from_file
+        register_face_from_path(self, image_path, name)
+        get_name_dialog
+        update_faces_list
+        delete_selected_face
+        toggle_fullscreen(self, event=None)
+        on_closing
+"""
+
 class ModernFaceRecognitionGUI:
     def __init__(self, root):
         self.root = root
@@ -40,9 +67,9 @@ class ModernFaceRecognitionGUI:
         """Setup main window with CustomTkinter styling"""
         # Set appearance mode and color theme
         ctk.set_appearance_mode("dark")  # "light" or "dark"
-        ctk.set_default_color_theme("blue")  # "blue", "green", "dark-blue"
+        ctk.set_default_color_theme("dark-blue")  # "blue", "green", "dark-blue"
         
-        self.root.title("Advanced Face Recognition System")
+        self.root.title("Face Recognition System")
         
         # Get screen dimensions
         screen_width = self.root.winfo_screenwidth()
@@ -53,14 +80,14 @@ class ModernFaceRecognitionGUI:
             self.root.attributes('-fullscreen', True)
             self.fullscreen = True
         else:
-            window_width = min(1400, screen_width - 100)
+            window_width = min(1400, screen_width - 100) # 100 for gap
             window_height = min(900, screen_height - 100)
             self.root.geometry(f"{window_width}x{window_height}")
             self.fullscreen = False
         
         # Center window
         if not self.fullscreen:
-            x = (screen_width - window_width) // 2
+            x = (screen_width - window_width) // 2 # // round to down to the nearest whole number
             y = (screen_height - window_height) // 2
             self.root.geometry(f"{window_width}x{window_height}+{x}+{y}")
         
@@ -88,6 +115,14 @@ class ModernFaceRecognitionGUI:
     def create_widgets(self):
         """Create all GUI widgets"""
         # Configure grid weights for responsive design
+
+        """
+        grid_columnconfigure(0, weight=3): Column 0 gets 3/4 of available width
+        grid_columnconfigure(1, weight=1): Column 1 gets 1/4 of available width
+        grid_rowconfigure(1, weight=1): Row 1 expands to fill available height
+        Higher weight values take more space when window is resized
+        """
+
         self.root.grid_columnconfigure(0, weight=3)
         self.root.grid_columnconfigure(1, weight=1)
         self.root.grid_rowconfigure(1, weight=1)
@@ -95,7 +130,7 @@ class ModernFaceRecognitionGUI:
         # Title
         title_label = ctk.CTkLabel(
             self.root, 
-            text="Advanced Face Recognition System",
+            text="Face Recognition System",
             font=ctk.CTkFont(size=24, weight="bold")
         )
         title_label.grid(row=0, column=0, columnspan=2, pady=(20, 10), sticky="ew")
