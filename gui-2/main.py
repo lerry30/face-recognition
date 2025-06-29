@@ -6,6 +6,8 @@ import cv2
 from PIL import Image, ImageTk
 
 from recog.face_recog import FaceRecognitionSystem
+#from utils.timeout import set_timeout
+import time
 
 class App:
     def __init__(self, root):
@@ -19,6 +21,8 @@ class App:
         style.configure('Frame.TFrame', background='#2b2b2b')
         style.configure('Button1.TButton', background='#585858', font=('Monospace', 12), foreground='white')
 
+        self.detected_count = 0
+        self.detected_face = None
         self.running = False
         self.cap = cv2.VideoCapture(2)
         
@@ -76,6 +80,19 @@ class App:
         self.video_label = tk.Label(self.root, bg='#1e1e1e')
         self.video_label.grid(column=0, row=2, padx=10, pady=10, sticky='nsew')
 
+    def create_detected_face(self):
+        img = Image.open('./registered_faces/lerry_20250616_025210.jpg')
+        img = img.resize((200, 200))
+        overlay_photo = ImageTk.PhotoImage(img)
+        
+        self.overlay_label = tk.Label(
+            self.root,
+            image=overlay_photo,
+            bg='#2b2b2b'
+        )
+        self.overlay_label.image = overlay_photo
+        self.overlay_label.place(relx=1.0, rely=1.0, anchor='se')
+
     #-------------------------------- PROCESS -----------------------------------------
 
     def init_face_system(self):
@@ -86,9 +103,7 @@ class App:
                 model='hog',
                 enable_logging=True
             )
-            
             print("Face recognition system initialized")
-            
         except Exception as e:
             messagebox.showerror("Error", f"Failed to initialize face recognition: {str(e)}")
 
@@ -105,15 +120,23 @@ class App:
 
         return cv2.resize(frame, (new_w, new_h))
 
-    def update_video(self):    
+    def update_video(self):
         if self.running:
             ret, frame = self.cap.read()
             if ret:
                 #---------
-                processed_frame, results = self.face_system.process_frame(frame, f"camera_{0}")
-
-                if len(results) > 0:
-                    print(results[0]['name'])
+                if self.detected_count >= 3:
+                    print("More that expected")
+                    self.detected_count = self.detected_count + 1
+                    max_frame = 60
+                    if self.detected_count >= max_frame:
+                        self.process_detected()
+                        self.detected_count = 0
+                else:
+                    processed_frame, results = self.face_system.process_frame(frame, f"camera_{0}")
+                    if len(results) > 0 and results[0]['confidence'] > 0.6:
+                        self.detected_count = self.detected_count + 1
+                        self.detected_face = results[0]
 
                 #------------ convert grb to rgb ------------
                 n_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -126,9 +149,18 @@ class App:
                 self.video_label.configure(image=img_tk)
                 self.video_label.image = img_tk
 
+        self.after_id = self.root.after(30, self.update_video) # ~33 fps
 
-        self.root.after(30, self.update_video) # ~33 fps
+    def blank_display(self):
+        # turn the display to blank
+        self.video_label.configure(image='', bg='#333333')
+        self.video_label.image = ''
+        self.video_label.update()
 
+    def process_detected(self):
+        self.blank_display()
+        # create pop up face detected
+        self.create_detected_face()
 
     #---------------------------------- ACTIONS --------------------------------------
 
@@ -137,7 +169,7 @@ class App:
         
     def stop_video(self):
         self.running = False
-        
+
 def main():
     root = ThemedTk(theme='equilux');
     app = App(root)
@@ -156,3 +188,20 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+
+"""
+def detected(self):
+    #if hasattr(self, 'after_id'):
+    #    self.root.after_cancel(self.after_id)
+    #-------------- start timeout ------------- 
+    timeout = 5
+    def restart():
+        time.sleep(timeout)
+        print(f"Found {face['name']}");
+        # delete detected face pop up
+        self.overlay_label.destroy()
+    result, error = set_timeout(restart, timeout)
+"""
+

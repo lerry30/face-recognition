@@ -206,8 +206,8 @@ class FaceRecognitionSystem:
                     confidence = 1 - face_distances[best_match_index]
             
             # Draw rectangle and label
-            cv2.rectangle(frame, (left, top), (right, bottom), (0, 255, 0), 2)
-            cv2.rectangle(frame, (left, bottom - 35), (right, bottom), (0, 255, 0), cv2.FILLED)
+            cv2.rectangle(frame, (left, top), (right, bottom), (102, 0, 148), 1)
+            cv2.rectangle(frame, (left, bottom - 35), (right, bottom), (102, 0, 148), cv2.FILLED)
             
             label = f"{name} ({confidence:.2f})"
             cv2.putText(frame, label, (left + 6, bottom - 6), 
@@ -285,51 +285,6 @@ class FaceRecognitionSystem:
                 self.logger.warning(f"Server responded with status {response.status_code}")
         except Exception as e:
             self.logger.error(f"Error sending to server: {str(e)}")
-    
-    def run_camera_recognition(self, camera_index=0, display=True):
-        """
-        Run real-time face recognition from camera
-        
-        Args:
-            camera_index: Camera index (0 for default camera)
-            display: Whether to display the video feed
-        """
-        cap = cv2.VideoCapture(camera_index)
-        cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
-        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 500)
-        
-        self.logger.info("Starting camera recognition...")
-        
-        while True:
-            ret, frame = cap.read()
-            if not ret:
-                break
-            
-            # Process frame
-            processed_frame, results = self.process_frame(frame, f"camera_{camera_index}")
-            
-            # Calculate FPS
-            self.frame_count += 1
-            current_time = time.time()
-            if current_time - self.last_fps_time >= 1.0:
-                self.fps_counter = self.frame_count
-                self.frame_count = 0
-                self.last_fps_time = current_time
-            
-            # Display FPS
-            cv2.putText(processed_frame, f"FPS: {self.fps_counter}", 
-                       (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-            
-            if display:
-                cv2.imshow('Advanced Face Recognition', processed_frame)
-                
-                # Break on 'q' key press
-                if cv2.waitKey(1) & 0xFF == ord('q'):
-                    break
-        
-        cap.release()
-        cv2.destroyAllWindows()
-        self.logger.info("Camera recognition stopped")
     
     def get_recognition_stats(self, days=7):
         """Get recognition statistics from the database"""
