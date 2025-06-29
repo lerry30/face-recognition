@@ -7,7 +7,8 @@ from PIL import Image, ImageTk
 
 from recog.face_recog import FaceRecognitionSystem
 #from utils.timeout import set_timeout
-import time
+#import time
+from pathlib import Path
 
 class App:
     def __init__(self, root):
@@ -81,17 +82,29 @@ class App:
         self.video_label.grid(column=0, row=2, padx=10, pady=10, sticky='nsew')
 
     def create_detected_face(self):
-        img = Image.open('./registered_faces/lerry_20250616_025210.jpg')
-        img = img.resize((200, 200))
-        overlay_photo = ImageTk.PhotoImage(img)
+        if not self.detected_face:
+            return
+
+        try:
+            directory = Path('./registered_faces')
+            name = self.detected_face['name']
+            matching_files = list(directory.glob(f"*{name}*"))
+            if len(matching_files) == 0:
+                raise FileNotFountError('File not found')
+
+            img = Image.open(str(matching_files[0]))
+            img = img.resize((200, 200))
+            overlay_photo = ImageTk.PhotoImage(img)
         
-        self.overlay_label = tk.Label(
-            self.root,
-            image=overlay_photo,
-            bg='#2b2b2b'
-        )
-        self.overlay_label.image = overlay_photo
-        self.overlay_label.place(relx=1.0, rely=1.0, anchor='se')
+            self.overlay_label = tk.Label(
+                self.root,
+                image=overlay_photo,
+                bg='#2b2b2b'
+            )
+            self.overlay_label.image = overlay_photo
+            self.overlay_label.place(relx=1.0, rely=1.0, anchor='se', x=-10, y=-10)
+        except Exception as e:
+            print('Unable to open image file of face matched')
 
     #-------------------------------- PROCESS -----------------------------------------
 
@@ -128,7 +141,7 @@ class App:
                 if self.detected_count >= 3:
                     print("More that expected")
                     self.detected_count = self.detected_count + 1
-                    max_frame = 60
+                    max_frame = 40
                     if self.detected_count >= max_frame:
                         self.process_detected()
                         self.detected_count = 0
