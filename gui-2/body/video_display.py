@@ -26,7 +26,7 @@ class VideoDisplay:
         self.face_system = None
         self.init_face_system()
 
-        self.cap = cv2.VideoCapture(2)
+        self.cap = None
 
         # video
         self.update_video()
@@ -34,38 +34,44 @@ class VideoDisplay:
     def show(self):
         self.create_buttons()
         self.create_video()
-
         self.start_video()
+
+        self.cap = cv2.VideoCapture(2)
 
     def hide(self):
         print('Hide Face Recognition')
         self.stop_video()
         self.video_label = None
 
+        self.cap.release()
+
+
     # ------------------------------ UI's ---------------------------
 
     def create_buttons(self):
         # Create top button frame
         nav_frame = ttk.Frame(self.cont, style="FrameLight.TFrame")
-        nav_frame.grid(column=0, row=0, padx=2, pady=2, sticky="ew")
+        nav_frame.grid(column=0, row=0, padx=2, pady=4, sticky="ew")
 
         # Create two buttons at the top
         self.btn_start = ttk.Button(
             nav_frame, 
             text="Start", 
-            style='Button1.TButton'
+            style='Button1.TButton',
+            command=self.start_video
         )
         self.btn_start.grid(column=0, row=0, padx=0, pady=0)
         
         self.btn_stop = ttk.Button(
             nav_frame, 
             text="Stop", 
-            style="Button1.TButton"
+            style="Button1.TButton",
+            command=self.stop_video
         )
         self.btn_stop.grid(column=1, row=0, padx=0, pady=0)
 
     def create_video(self):
-        self.video_label = tk.Label(self.cont, bg='#1e1e1e')
+        self.video_label = tk.Label(self.cont, bg='#1e1e1f')
         self.video_label.grid(column=0, row=1, sticky="nsew")
 
     # --------------------------- On something change UIs ------------------------
@@ -97,6 +103,20 @@ class VideoDisplay:
 
     #-------------------------------- PROCESS -----------------------------------------
 
+    def cont_dimension(self):
+        geom = self.root.geometry()
+        r_width, r_height = map(int, geom.split('+')[0].split('x'))
+
+        width = r_width - 20 # 20 padding
+        height = r_height - (int(r_height * 0.04 + 8) * 2)
+        if height <= 0:
+            return (0, 0)
+        return (width, height)
+
+    def center_video_horizontaly(self, space):
+        padding_x = space // 2
+        self.video_label.grid_configure(padx=padding_x)
+
     def init_face_system(self):
         """Initialize face recognition system"""
         try:
@@ -110,18 +130,19 @@ class VideoDisplay:
             messagebox.showerror("Error", f"Failed to initialize face recognition: {str(e)}")
 
     def aspect_ratio(self, frame):
-        width = self.video_label.winfo_width() or 800
-        height = self.video_label.winfo_height() or 600
+        width, height = self.cont_dimension()
 
-        v_width = width if width > 800 else 800
-        v_height = height if height > 600 else 600
+        if width <= 0 or height <= 0:
+            return frame
 
         h, w = frame.shape[:2]
         # calculate scaling factor to bit within bounds
-        scale = min(v_width/w, v_height/h)
+        scale = min(width/w, height/h)
 
         new_w = int(w * scale)
         new_h = int(h * scale)
+
+        self.center_video_horizontaly(width - new_w)
 
         return cv2.resize(frame, (new_w, new_h))
 
@@ -166,7 +187,6 @@ class VideoDisplay:
         self.blank_display()
         # create pop up face detected
         self.create_detected_face()
-    
 
     #---------------------------------- ACTIONS --------------------------------------
     def start_video(self):

@@ -11,7 +11,10 @@ class App:
     def __init__(self, root):
         self.root = root
         self.root.title("Face Recognition")
-        self.root.geometry("800x600")
+
+        self.r_dimension = {'width': 800, 'height': 600}
+
+        self.root.geometry(f"{self.r_dimension['width']}x{self.r_dimension['height']}")
 
         style = Style()
 
@@ -32,18 +35,23 @@ class App:
         self.create_main_content()
 
     def create_title(self):
+        max_height = int(self.r_dimension['height'] * 0.04)
+        title_frame = ttk.Frame(self.root, height=max_height, style="Frame.TFrame")
+        title_frame.grid(column=0, row=0, ipady=4, sticky="ew")
+
         title = ttk.Label(
             self.root,
             text='Face Recognition',
             font=('Monospace', 14),
             style='Label.TLabel'
         )
-        title.grid(column=0, row=0, columnspan=2, pady=10)
+        title.grid(column=0, row=0)
 
     def create_nav(self):
         # Create top button frame
-        nav_frame = ttk.Frame(self.root, style="Frame.TFrame")
-        nav_frame.grid(column=0, row=1, padx=10, pady=4, sticky="ew")
+        max_height = int(self.r_dimension['height'] * 0.04)
+        nav_frame = ttk.Frame(self.root, height=max_height, style="Frame.TFrame")
+        nav_frame.grid(column=0, row=1, ipady=4, sticky="ew")
         
         self.btn_video = ttk.Button(
             nav_frame, 
@@ -51,7 +59,7 @@ class App:
             style='Button1.TButton',
             command=lambda: self.switch_content('video')
         )
-        self.btn_video.grid(column=0, row=0, padx=0, pady=0)
+        self.btn_video.grid(column=0, row=0, padx=10, pady=0)
         
         self.btn_settings = ttk.Button(
             nav_frame, 
@@ -63,7 +71,7 @@ class App:
 
     def create_main_content(self):
         self.main_content = ttk.Frame(self.root, style="FrameLight.TFrame")
-        self.main_content.grid(column=0, row=2, padx=10, pady=(4, 10), sticky='nsew')
+        self.main_content.grid(column=0, row=2, padx=10, pady=(0, 10), sticky='nsew')
 
         self.content_classes = {
             'video': VideoDisplay(self.main_content, self.root),
@@ -73,7 +81,6 @@ class App:
         # By default video display should be initialized
         self.content_classes['video'].show()
         self.current_content = 'video'
-
 
     #---------------------------------- ACTIONS --------------------------------------
 
