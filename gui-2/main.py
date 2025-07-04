@@ -72,6 +72,9 @@ class App:
     def create_main_content(self):
         self.main_content = ttk.Frame(self.root, style="FrameLight.TFrame")
         self.main_content.grid(column=0, row=2, padx=10, pady=(0, 10), sticky='nsew')
+        # default grid layout
+        # self.main_content.grid_columnconfigure(0, weight=1)
+        # self.main_content.grid_rowconfigure(0, weight=1)
 
         self.content_classes = {
             'video': VideoDisplay(self.main_content, self.root),
@@ -101,11 +104,15 @@ def main():
     root.configure(bg='#2b2b2b')
 
     def on_closing():
-        video_display = app.content_classes['video']
-        video_display.running = False
-        if video_display.cap.isOpened():
-            video_display.cap.release()
-        root.destroy()
+        try:
+            video_display = app.content_classes['video']
+            video_display.running = False
+            if video_display.cap.isOpened():
+                video_display.cap.release()
+        except Exception as e:
+            print("Closing OpenCV error")
+        finally:
+            root.destroy()
 
     root.protocol('WM_DELETE_WINDOW', on_closing)
     root.mainloop()

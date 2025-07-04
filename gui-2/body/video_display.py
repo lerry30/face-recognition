@@ -9,6 +9,10 @@ from recog.face_recog import FaceRecognitionSystem
 #import time
 from pathlib import Path
 
+from utils.available_cam import list_available_cameras
+
+from singleton.camera_manager import CameraManager
+
 class VideoDisplay:
     def __init__(self, cont, root):
         self.cont = cont
@@ -32,21 +36,50 @@ class VideoDisplay:
         self.update_video()
 
     def show(self):
-        self.create_buttons()
-        self.create_video()
-        self.start_video()
+        try:
+            self.close_open_cam()
 
-        self.cap = cv2.VideoCapture(2)
+            camera_manager = CameraManager()
+            cam = camera_manager.get_camera()
+
+            if not cam:
+                available_cameras = list_available_cameras(4)
+                if len(available_cameras) == 0:
+                    self.create_label_empty_cam()
+                    raise ValueError('Camera not found')
+                cam = available_cameras[0]
+
+            n_cam = int(cam)
+            self.cap = cv2.VideoCapture(n_cam)
+
+            self.create_buttons()
+            self.create_video()
+            self.start_video()
+        except Exception as e:
+            print('Camera error')
 
     def hide(self):
         print('Hide Face Recognition')
+
         self.stop_video()
         self.video_label = None
 
-        self.cap.release()
+        self.close_open_cam()
 
+        # reset the containers layout
+        self.cont.grid_columnconfigure(0, weight=0)
+        self.cont.grid_rowconfigure(0, weight=0)
 
     # ------------------------------ UI's ---------------------------
+
+    def create_label_empty_cam(self):
+        self.cont.grid_columnconfigure(0, weight=1)
+        self.cont.grid_rowconfigure(0, weight=1)
+        ttk.Label(
+            self.cont,
+            text='No Camera Found.',
+            font=('Monospace', 14)
+        ).grid(column=0, row=0)
 
     def create_buttons(self):
         # Create top button frame
@@ -188,11 +221,14 @@ class VideoDisplay:
         # create pop up face detected
         self.create_detected_face()
 
+    def close_open_cam(self):
+        if hasattr(self.cap, 'isOpened') and self.cap.isOpened():
+            self.cap.release()
+
     #---------------------------------- ACTIONS --------------------------------------
     def start_video(self):
         self.running = True
         
     def stop_video(self):
-        self.running = False
-
+        self.running = False 
 
